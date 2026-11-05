@@ -1,10 +1,11 @@
 ﻿using CampusPlacementManagement.Models;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 using CampusPlacementManagement.Repositories;
 using CampusPlacementManagement.Repositories.Interfaces;
 using CampusPlacementManagement.Services;
 using CampusPlacementManagement.Services.Interfaces;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 
 namespace CampusPlacementManagement.Data
@@ -25,6 +26,8 @@ namespace CampusPlacementManagement.Data
         public DbSet<CompanyHR> CompanyHRs { get; set; }
 
         public DbSet<PlacementOfficer> PlacementOfficers { get; set; }
+
+        public DbSet<Student> Students { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -75,6 +78,33 @@ namespace CampusPlacementManagement.Data
                 .WithMany()
                 .HasForeignKey(hr => hr.CompanyId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Student>()
+    .HasOne(s => s.User)
+    .WithMany()
+    .HasForeignKey(s => s.UserId)
+    .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Student>()
+                .HasOne(s => s.College)
+                .WithMany()
+                .HasForeignKey(s => s.CollegeId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Student>()
+                .HasOne(s => s.PlacementOfficer)
+                .WithMany()
+                .HasForeignKey(s => s.PlacementOfficerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Register number must be unique within a college
+            builder.Entity<Student>()
+                .HasIndex(s => new { s.CollegeId, s.RegisterNumber })
+                .IsUnique();
+
+            builder.Entity<Student>()
+    .Property(s => s.CGPA)
+    .HasPrecision(4, 2);
         }
     }
 }

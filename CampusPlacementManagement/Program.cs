@@ -103,6 +103,20 @@ builder.Services.AddScoped<IPlacementOfficerService, PlacementOfficerService>();
 builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
 builder.Services.AddScoped<ICompanyService, CompanyService>();
 
+builder.Services.AddScoped<ICompanyHRRepository, CompanyHRRepository>();
+
+builder.Services.AddScoped<ICompanyHRService, CompanyHRService>();
+
+builder.Services.AddScoped<ICompanyHRRepository, CompanyHRRepository>();
+builder.Services.AddScoped<ICompanyHRService, CompanyHRService>();
+
+
+builder.Services.AddScoped<IStudentRepository, StudentRepository>();
+
+builder.Services.AddHttpContextAccessor();
+
+builder.Services.AddScoped<IStudentService, StudentService>();
+
 var app = builder.Build();
 
 
