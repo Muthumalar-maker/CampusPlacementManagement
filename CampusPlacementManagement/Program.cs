@@ -86,6 +86,15 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+
+using (var scope = app.Services.CreateScope())
+{
+    await DbInitializer.InitializeAsync(
+        scope.ServiceProvider,
+        app.Configuration);
+}
+
+
 // Scalar API documentation
 if (app.Environment.IsDevelopment())
 {
