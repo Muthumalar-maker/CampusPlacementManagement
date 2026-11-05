@@ -100,6 +100,9 @@ builder.Services.AddScoped<IPlacementOfficerRepository, PlacementOfficerReposito
 // Placement Officer Service
 builder.Services.AddScoped<IPlacementOfficerService, PlacementOfficerService>();
 
+builder.Services.AddScoped<ICompanyRepository, CompanyRepository>();
+builder.Services.AddScoped<ICompanyService, CompanyService>();
+
 var app = builder.Build();
 
 
