@@ -1,5 +1,9 @@
 using CampusPlacementManagement.Data;
 using CampusPlacementManagement.Models;
+using CampusPlacementManagement.Repositories;
+using CampusPlacementManagement.Repositories.Interfaces;
+using CampusPlacementManagement.Services;
+using CampusPlacementManagement.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -83,6 +87,18 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddAuthorization();
+
+// College Repository
+builder.Services.AddScoped<ICollegeRepository, CollegeRepository>();
+
+// College Service
+builder.Services.AddScoped<ICollegeService, CollegeService>();
+
+// Placement Officer Repository
+builder.Services.AddScoped<IPlacementOfficerRepository, PlacementOfficerRepository>();
+
+// Placement Officer Service
+builder.Services.AddScoped<IPlacementOfficerService, PlacementOfficerService>();
 
 var app = builder.Build();
 

@@ -1,11 +1,9 @@
 ﻿
-using CampusPlacementManagement.Data;
+using CampusPlacementManagement.Common;
 using CampusPlacementManagement.DTOs.Colleges;
-using CampusPlacementManagement.Enums;
-using CampusPlacementManagement.Models;
+using CampusPlacementManagement.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace CampusPlacementManagement.Controllers
 {
@@ -13,155 +11,57 @@ namespace CampusPlacementManagement.Controllers
     [Route("api/[controller]")]
     public class CollegesController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly ICollegeService _service;
 
-        public CollegesController(ApplicationDbContext context)
+        public CollegesController(ICollegeService service)
         {
-            _context = context;
+            _service = service;
         }
 
-        // POST: api/colleges/register
+        // POST: api/Colleges/register
         [HttpPost("register")]
         [AllowAnonymous]
-        public async Task<IActionResult> RegisterCollege(
+        public async Task<IActionResult> Register(
             RegisterCollegeRequest request)
         {
-            bool exists = await _context.Colleges
-                .AnyAsync(c => c.CollegeCode == request.CollegeCode);
+            var result = await _service.RegisterAsync(request);
 
-            if (exists)
+            if (result.StatusCode == 201)
             {
-                return Conflict(new
-                {
-                    message = "College code already exists."
-                });
+                return StatusCode(201, result);
             }
 
-            var college = new College
-            {
-                CollegeName = request.CollegeName,
-                CollegeCode = request.CollegeCode,
-                Address = request.Address,
-                City = request.City,
-                State = request.State,
-                ContactNumber = request.ContactNumber,
-                Email = request.Email,
-                Status = CollegeStatus.Pending,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            _context.Colleges.Add(college);
-            await _context.SaveChangesAsync();
-
-            var response = new CollegeResponse
-            {
-                CollegeId = college.CollegeId,
-                CollegeName = college.CollegeName,
-                CollegeCode = college.CollegeCode,
-                Address = college.Address,
-                City = college.City,
-                State = college.State,
-                ContactNumber = college.ContactNumber,
-                Email = college.Email,
-                Status = college.Status,
-                CreatedAt = college.CreatedAt
-            };
-
-            return CreatedAtAction(
-                nameof(GetCollegeById),
-                new { id = college.CollegeId },
-                response);
+            return StatusCode(result.StatusCode, result);
         }
 
-        // GET: api/colleges
+        // GET: api/Colleges
         [HttpGet]
         [Authorize(Roles = "SuperAdmin")]
-        public async Task<IActionResult> GetAllColleges()
+        public async Task<IActionResult> GetAll()
         {
-            var colleges = await _context.Colleges
-                .Select(c => new CollegeResponse
-                {
-                    CollegeId = c.CollegeId,
-                    CollegeName = c.CollegeName,
-                    CollegeCode = c.CollegeCode,
-                    Address = c.Address,
-                    City = c.City,
-                    State = c.State,
-                    ContactNumber = c.ContactNumber,
-                    Email = c.Email,
-                    Status = c.Status,
-                    CreatedAt = c.CreatedAt
-                })
-                .ToListAsync();
+            var result = await _service.GetAllAsync();
 
-            return Ok(colleges);
+            return StatusCode(result.StatusCode, result);
         }
 
-        // GET: api/colleges/1
+        // GET: api/Colleges/1
         [HttpGet("{id}")]
         [Authorize(Roles = "SuperAdmin")]
-        public async Task<IActionResult> GetCollegeById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            var college = await _context.Colleges
-                .Where(c => c.CollegeId == id)
-                .Select(c => new CollegeResponse
-                {
-                    CollegeId = c.CollegeId,
-                    CollegeName = c.CollegeName,
-                    CollegeCode = c.CollegeCode,
-                    Address = c.Address,
-                    City = c.City,
-                    State = c.State,
-                    ContactNumber = c.ContactNumber,
-                    Email = c.Email,
-                    Status = c.Status,
-                    CreatedAt = c.CreatedAt
-                })
-                .FirstOrDefaultAsync();
+            var result = await _service.GetByIdAsync(id);
 
-            if (college == null)
-            {
-                return NotFound(new
-                {
-                    message = "College not found."
-                });
-            }
-
-            return Ok(college);
+            return StatusCode(result.StatusCode, result);
         }
 
-        // PUT: api/colleges/1/approve
+        // PUT: api/Colleges/1/approve
         [HttpPut("{id}/approve")]
         [Authorize(Roles = "SuperAdmin")]
-        public async Task<IActionResult> ApproveCollege(int id)
+        public async Task<IActionResult> Approve(int id)
         {
-            var college = await _context.Colleges.FindAsync(id);
+            var result = await _service.ApproveAsync(id);
 
-            if (college == null)
-            {
-                return NotFound(new
-                {
-                    message = "College not found."
-                });
-            }
-
-            if (college.Status != CollegeStatus.Pending)
-            {
-                return BadRequest(new
-                {
-                    message = "Only pending colleges can be approved."
-                });
-            }
-
-            college.Status = CollegeStatus.Approved;
-            college.UpdatedAt = DateTime.UtcNow;
-
-            await _context.SaveChangesAsync();
-
-            return Ok(new
-            {
-                message = "College approved successfully."
-            });
+            return StatusCode(result.StatusCode, result);
         }
     }
 }
